@@ -37,7 +37,13 @@ riscv-cpu/
 │   ├── Basys-3-Master.xdc   # Basys 3 constraints file
 │   ├── fourbit_reg.v        # Parameterized N-bit register
 │   └── fourBit_reg_tb.v     # Testbench for register
-├── Week 2/                  # Coming soon — 32-bit ALU
+├── Week 2/
+│   ├── ALU.v                # 32-bit Arithmetic Logic Unit      
+│   ├── ALU_TB.v             # Testbench for ALU
+├── Week 3/                  # Coming soon — RISC-V ISA study & register file
+│   ├── regFile.v            # 32x32 RISC-V register file
+│   └── reg_TB.v             # Testbench for register file
+├── Week 4/                  # Coming soon — Fetch & Decode stages
 └── ...
 ```
 
@@ -69,6 +75,91 @@ Verified with a behavioral simulation testbench in Vivado XSIM covering reset, e
 
 ---
 
+## Week 2 — 32-bit ALU
+
+**Goals:** Design and verify a fully functional 32-bit ALU that supports all possible RV32I arithmetic, logic, comparison, and shift operations.
+
+###ALU ('ALU.v')
+A combinational 32-bit Arithmetic Logic Unit implementing all 10 RV32I operations selected via a 4-bit selector:
+
+| Control | Operation | Description |
+|---|---|---|
+| 4'b0000 | ADD | A + B |
+| 4'b0001 | SUB | A - B |
+| 4'b0010 | AND | A & B |
+| 4'b0011 | OR | A \| B |
+| 4'b0100 | XOR | A ^ B |
+| 4'b0101 | SLT | 1 if A < B (signed), else 0 |
+| 4'b0110 | SLTU | 1 if A < B (unsigned), else 0 |
+| 4'b0111 | SLL | A << B[4:0] |
+| 4'b1000 | SRL | A >> B[4:0] |
+| 4'b1001 | SRA | A >>> B[4:0] (sign-extending) |
+
+Also included a 'Zero' flag output that goes high when the result outputs 0. Will be used later for CPU branch logic.
+
+```verilog
+module ALU(
+    input [31:0] A, 
+    input [31:0] B, 
+    input [3:0] sel,
+    output [31:0] ALU_out,
+    output Zero
+    );
+```
+
+### ALU TestBench ('ALU_TB.v')
+A fully comprehensive testbench incorporating all 10 operations needed for the RV32I instruction set with 36 test cases, including edge cases such as overflow, underflow, negative number comparisons, shift-by-zero, arithmetic right shift extensions, and Zero flag validation. 
+
+Verified in Vivado XSIM - all 36 tests pass.
+
+## Week 3 - RISC-V Register File and ISA Study
+
+**Goals:** Study all 6 RV32I instruction formats and build a register file used to implement the CPU starting in week 4.
+
+### ISA Study
+Studying all 6 RV32I instruction formats:
+
+| Format | Instructions | Key Fields |
+|---|---|---|
+| R-type | ADD, SUB, AND, OR, XOR, SLL, SRL, SRA, SLT, SLTU | opcode, funct3, funct7, rs1, rs2, rd |
+| I-type | ADDI, LW, JALR | opcode, funct3, rs1, rd, imm[11:0] |
+| S-type | SW | opcode, funct3, rs1, rs2, imm[11:0] |
+| B-type | BEQ, BNE, BLT, BGE | opcode, funct3, rs1, rs2, imm[12:1] |
+| U-type | LUI, AUIPC | opcode, rd, imm[31:12] |
+| J-type | JAL | opcode, rd, imm[20:1] |
+
+### Register File ('regFile.v')
+A synchronous 32x32 register file that implements the RISC-V register bank with two asynchronous read ports and one synchronous write port:
+- 32 registers that are 32 bits wide ('reg[31:0], regs[31:0])
+- Two asynchronous read ports working simultaneously (rd1, rd2)
+- One synchronous write port clocked on the rising edge
+- x0 hardwired to 0: reads always return 0, writes are ignored.
+
+```verilog
+module regFile(
+    input clk,
+    input we,                  // write enable
+    input [4:0] ra1, ra2,      // read addresses
+    input [4:0] wa,            // write address
+    input [31:0] wd,           // write data
+    output [31:0] rd1, rd2     // read data
+);
+```
+
+### Register File TestBench ('regTB.v')
+A comprehensive testbench that tests 7 different groups of tests:
+- **Group 1:** Basic read/write and register impedance
+- **Group 2:** x0 hardwired to zero rule
+- **Group 3:** Write enabled gating
+- **Group 4:** Simultaneous dual read ports
+- **Group 5:** All 31 writable registers 
+- **Group 6:** Boundray cases (x1 - x31)
+- **Group 7:** Edge case data values
+
+Verified in Vivado xSim, all tests pass.
+
+---
+
 ## Hardware
 
 - **Board:** Digilent Basys 3 (Xilinx Artix-7 XC7A35T)
@@ -80,8 +171,8 @@ Verified with a behavioral simulation testbench in Vivado XSIM covering reset, e
 ## Progress
 
 - [x] Week 1 — Toolchain setup, combinational logic, sequential registers
-- [ ] Week 2 — 32-bit ALU
-- [ ] Week 3 — RISC-V ISA study
+- [x] Week 2 — 32-bit ALU
+- [x] Week 3 — RISC-V ISA study
 - [ ] Week 4 — Fetch & Decode stages
 - [ ] Week 5 — Execute, Memory & Writeback
 - [ ] Week 6 — Single-cycle CPU complete
