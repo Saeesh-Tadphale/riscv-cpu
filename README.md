@@ -4,9 +4,9 @@ A pipelined 32-bit RISC-V (RV32I) processor built from scratch in Verilog, targe
 relevant to the semiconductor industry.
 
 **Built by:** Saeesh Tadphale  
-**Institution:** Carleton University — Electrical Engineering  
+**University:** Carleton University: Electrical Engineering with a Physics Minor
 **Tools:** Vivado ML Standard 2025.2, Verilog, Basys 3 Artix-7 FPGA  
-**Reference:** *Digital Design and Computer Architecture: RISC-V Edition* — Harris & Harris
+**Reference:** *Digital Design and Computer Architecture: RISC-V Edition* by  Harris & Harris
 
 ---
 
@@ -44,6 +44,14 @@ riscv-cpu/
 │   ├── regFile.v            # 32x32 RISC-V register file
 │   └── reg_TB.v             # Testbench for register file
 ├── Week 4/                  # Coming soon — Fetch & Decode stages
+│   ├── PC.v                 # 32-bit Program Counter
+│   ├── imem.v               # Instruction memory (ROM)
+│   ├── decode.v             # Instruction decoder
+│   ├── datapath.v           # Top-level fetch/decode datapath
+│   └── datapath_tb.v        # Testbench for datapath
+│   ├── fourbit_reg.v        # Parameterized N-bit register that is instantiated by PC
+│   ├── regFile.v            # 32x32 RISC-V register file that is instantiated in datapath
+├── Week 5/                  # Coming soon — Execute, Memory & Writeback
 └── ...
 ```
 
@@ -61,7 +69,7 @@ A simple combinational logic module utilizing all 16 switches and LEDs on the Ba
 Successfully synthesized and programmed onto the Basys 3
 
 ### Parameterized N-bit Register ('fourBit_reg.v')
-a clocked, synchronous register with configurable bit width using Verilog parameters
+A clocked, synchronous register with configurable bit width using Verilog parameters
 -Synchronous active-high reset
 -Clock enable signal
 -Default to 4-bit, instantiable at any width (e.g., 32-bit for the CPU register file)
@@ -156,7 +164,7 @@ A comprehensive testbench that tests 7 different groups of tests:
 - **Group 6:** Boundray cases (x1 - x31)
 - **Group 7:** Edge case data values
 
-Verified in Vivado xSim, all tests pass.
+Verified in Vivado xSim; all tests pass.
 
 ---
 
@@ -168,12 +176,18 @@ Verified in Vivado xSim, all tests pass.
 
 ---
 
+## Week 4: Fetch and Decode Signals
+
+**Goals:** Build the fetch and decode stages of the CPU datapath, program counter, instruction memory, instruction decoder, and wire them together into a top-level datapath file
+
+### Program Counter ('PC.v')
+A 32-bit register that holds the current instruction memory. Increments by 4 every clock cycle
 ## Progress
 
 - [x] Week 1 — Toolchain setup, combinational logic, sequential registers
 - [x] Week 2 — 32-bit ALU
 - [x] Week 3 — RISC-V ISA study
-- [ ] Week 4 — Fetch & Decode stages
+- [x] Week 4 — Fetch & Decode stages
 - [ ] Week 5 — Execute, Memory & Writeback
 - [ ] Week 6 — Single-cycle CPU complete
 - [ ] Week 7 — Pipeline registers
