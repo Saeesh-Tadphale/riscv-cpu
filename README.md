@@ -166,7 +166,55 @@ A comprehensive testbench that tests 7 different groups of tests:
 
 Verified in Vivado xSim; all tests pass.
 
+## Week 4: Fetch and Decode Signals
+
+**Goals:** Build the fetch and decode stages of the CPU datapath, program counter, instruction memory, instruction decoder, and wire them together into a top-level datapath file
+
+### Program Counter (`PC.v`)
+A 32-bit register that holds the current instruction memory address. Increments by 4 every clock cycle. Resets to `0x00000000` on reset. Built using the parameterized register(`fourbit_reg.v`) from Week 1. 
+
+```verilog
+module PC(
+    input clk,rst,
+    output [31:0] pc_out
+);
+```
+### Instruction Memory (`imem.v`)
+A 64-word read-only instruction ROM. It takes a byte address from the PC and outputs a corresponding 32-bit instruction. These instructions have been pre-initialized with NOP instructions (32'h00000013`) and are overridden with test instructions for simulation.
+
+```verilog
+module imem(
+    input [31:0] address,
+    output [31:0] instr
+);
+```
+
+### Instruction Decoder (`decode.v`)
+Takes a 32-bit instruction and splits it into the 6 RSVI instructions by extracting all the fields and information using bit slicing. It then properly formats the information using correct sign extension.
+
+| Field | Bits | Description |
+|---|---|---|
+| opcode | [6:0] | Instruction type |
+| rd | [11:7] | Destination register |
+| funct3 | [14:12] | Operation modifier |
+| rs1 | [19:15] | Source register 1 |
+| rs2 | [24:20] | Source register 2 |
+| funct7 | [31:25] | Operation modifier 2 |
+
+### Datapath (`datapath.v`)
+A top-level module that wires the PC to the instruction memory (IMEM), the decoder, and finally the register file. The operation of this module was verified using a simulation testbench to ensure that it correctly performs instruction fetching and decoding across multiple clock cycles.
 ---
+
+### Simulation Testbench (`datapath_tb.v`)
+A behavioural simulation that instantiates the full datapath and clocks it for 10 cycles, printing the PC, instruction, opcode, rd, rs1, rs2, and immediate every cycle. Verifies that the fetch and decode stages work as intended. 
+
+Test Confirmed:
+    - PC starts at 0x00000000 on reset and increments by 4 every cycle
+    - ADDI x1, x0, 1 correctly decoded: opcode = 0010011, rd = 1, rs1 = 0, imm = 1
+    - ADD x2, x1, x2 correctly decoded: opcode = 0110011, rd = 2, rs1 = 1, rs2 = 2, imm = 0
+    - Uninitialized memory slots correctly output NOP (0x00000013)
+
+All verified using Vivado xSim; all cycles produce expected output
 
 ## Hardware
 
@@ -176,12 +224,6 @@ Verified in Vivado xSim; all tests pass.
 
 ---
 
-## Week 4: Fetch and Decode Signals
-
-**Goals:** Build the fetch and decode stages of the CPU datapath, program counter, instruction memory, instruction decoder, and wire them together into a top-level datapath file
-
-### Program Counter ('PC.v')
-A 32-bit register that holds the current instruction memory. Increments by 4 every clock cycle
 ## Progress
 
 - [x] Week 1 — Toolchain setup, combinational logic, sequential registers
