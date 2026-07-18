@@ -166,7 +166,7 @@ A comprehensive testbench that tests 7 different groups of tests:
 
 Verified in Vivado xSim; all tests pass.
 
-## Week 4: Fetch and Decode Signals
+## Week 4: Fetch and Decode Stages
 
 **Goals:** Build the fetch and decode stages of the CPU datapath, program counter, instruction memory, instruction decoder, and wire them together into a top-level datapath file
 
@@ -227,9 +227,9 @@ All verified using Vivado xSim; all cycles produce expected output
 ## Progress
 
 - [x] Week 1 — Toolchain setup, combinational logic, sequential registers
-- [x] Week 2 — 32-bit ALU
-- [x] Week 3 — RISC-V ISA study
-- [x] Week 4 — Fetch & Decode stages
+- [x] Week 2 — 32-bit ALU with comprehensive testbench
+- [x] Week 3 — RISC-V ISA study and 32x32 register file
+- [x] Week 4 — Fetch & Decode stages: PC, imem, decoder, datapath
 - [ ] Week 5 — Execute, Memory & Writeback
 - [ ] Week 6 — Single-cycle CPU complete
 - [ ] Week 7 — Pipeline registers
