@@ -51,7 +51,18 @@ riscv-cpu/
 │   └── datapath_tb.v        # Testbench for datapath
 │   ├── fourbit_reg.v        # Parameterized N-bit register that is instantiated by PC
 │   ├── regFile.v            # 32x32 RISC-V register file that is instantiated in datapath
-├── Week 5/                  # Coming soon — Execute, Memory & Writeback
+├── Week 5/
+│   ├── control.v            # Main control unit
+│   ├── ALUControl.v         # ALU control sub-decoder
+│   ├── dmem.v               # Data memory (RAM)
+│   ├── datapath.v           # Updated top-level datapath (full single-cycle CPU)
+│   ├── datapath_tb.v        # Testbench for full CPU
+│   ├── PC.v                 # Updated PC with next_pc input for branching
+│   ├── imem.v               # Updated with real test program
+│   ├── ALU.v                # ALU from Week 2 instantiated in datapath
+│   ├── decode.v             # Decoder from Week 4
+│   └── regFile.v            # Register file from Week 3
+├── Week 6/                  # Coming soon — Single-cycle CPU complete
 └── ...
 ```
 
@@ -216,6 +227,75 @@ Test Confirmed:
 
 All verified using Vivado xSim; all cycles produce expected output
 
+## Week 5: Execute, Memory & Writeback
+
+**Goals:** Complete the single-cycle CPU by adding a control unit, ALU control decoder, data memory, writeback mux, and branch logic: making the CPU capable of executing real RISC-V programs.
+
+### Control Unit (`control.v`)
+The brain of the CPU. Takes the opcode and generates all control signals for every other module:
+
+| Signal | Description |
+|---|---|
+| RegWrite | Enable register file write |
+| ALUSrc | Select immediate (1) or register (0) as ALU SrcB |
+| MemWrite | Enable data memory write |
+| MemRead | Enable data memory read |
+| Branch | Signal a conditional branch |
+| ResultSrc | Select writeback source: ALU result (00) or memory (01) |
+| ALUOp | Tell ALU control what category of operation to perform |
+| PCSrc | Computed as Branch & Zero: selects branch target or PC+4 |
+
+```verilog
+module control(
+    input [6:0] opcode,
+    input [2:0] funct3,
+    input funct7b5,
+    input zero,
+    output PCSrc,
+    output reg RegWrite, ALUSrc, MemWrite, MemRead, Branch,
+    output reg [1:0] ResultSrc, ALUOp
+);
+```
+
+### ALU Control (`ALUControl.v`)
+A sub-decoder that takes `ALUOp` from the control unit plus `funct3` and `funct7b5`, and outputs the 4-bit `ALUSel` signal for the week 2 ALU. Handles the ADD/SUB and SRL/SRA disambiguation via `funct7b5`.
+
+### Data Memory (`dmem.v`)
+A 64-word synchronous RAM with one asynchronous read port and one synchronous write port. Used by `LW` and `SW` instructions. Initialized to all zeros.
+
+```verilog
+module dmem(
+    input clk, MemWrite,
+    input [31:0] address, wd,
+    output [31:0] rd
+);
+```
+
+### Updated Datapath (`datapath.v`)
+Full single-cycle CPU: wires all modules together including the control unit, ALU control, ALU, data memory, ALUSrc mux, writeback mux, and branch logic.
+
+```
+PC -> IMEM -> Decode -> RegFile -> ALUSrc mux -> ALU -> Writeback mux -> RegFile write
+                                                  |
+                                                  v
+                                              Data Memory
+```
+
+### CPU Testbench (`datapath_tb.v`)
+Runs a 5-instruction test program through the CPU and verifies correct execution:
+
+```
+ADDI x1, x0, 5: load 5 into x1
+ADDI x2, x0, 3: load 3 into x2
+ADD  x3, x1, x2: x3 = 8
+SW   x3, 0(x3): store 8 to data memory
+LW   x4, 0(x3): load 8 back into x4
+```
+
+Simulation output confirmed all 5 instructions executed correctly: ALU results, register writes, memory store and load all verified in Vivado xsim.
+
+---
+
 ## Hardware
 
 - **Board:** Digilent Basys 3 (Xilinx Artix-7 XC7A35T)
@@ -230,7 +310,7 @@ All verified using Vivado xSim; all cycles produce expected output
 - [x] Week 2 — 32-bit ALU with comprehensive testbench
 - [x] Week 3 — RISC-V ISA study and 32x32 register file
 - [x] Week 4 — Fetch & Decode stages: PC, imem, decoder, datapath
-- [ ] Week 5 — Execute, Memory & Writeback
+- [x] Week 5 — Execute, Memory & Writeback
 - [ ] Week 6 — Single-cycle CPU complete
 - [ ] Week 7 — Pipeline registers
 - [ ] Week 8 — Hazard detection & forwarding
