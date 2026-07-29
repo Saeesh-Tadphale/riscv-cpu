@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 07/15/2026 08:41:48 PM
+// Create Date: 07/27/2026 04:24:28 PM
 // Design Name: 
-// Module Name: imem
+// Module Name: dmem
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -19,24 +19,25 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-module imem(
-    input [31:0] address,
-    output [31:0] instr
+
+module dmem(
+    input clk, MemWrite, 
+    input [31:0] address, wd,
+    output [31:0] rd
     );
     
-    reg [31:0] mem [0:63];
+    reg [31:0] mem [63:0];
     integer i;
-    assign instr = mem[address[7:2]];
+    assign rd = mem[address[7:2]];
     
-    initial begin 
+    always @(posedge clk) begin
+        if(MemWrite)
+            mem[address[7:2]] <= wd;
+    end 
+    
+    initial begin  
         for(i = 0; i < 64; i = i + 1)
-            mem[i] = 32'h00000013;
-            
-        mem[0] = 32'h00500093; 
-        mem[1] = 32'h00300113; 
-        mem[2] = 32'h002081B3; 
-        mem[3] = 32'h0031A023; 
-        mem[4] = 32'h0001A203; 
+            mem[i] = 32'h00000000; 
     end
     
 endmodule
