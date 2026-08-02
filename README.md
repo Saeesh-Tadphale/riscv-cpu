@@ -63,7 +63,9 @@ riscv-cpu/
 │   ├── decode.v             # Decoder from Week 4
 │   └── regFile.v            # Register file from Week 3
 ├── Week 6/                  # Coming soon — Single-cycle CPU complete
-└── ...
+│   ├── imem.v               # Updated with another real test program
+├── Week 7/                  # Coming soon — Pipeline registers
+└── ...                        
 ```
 
 ---
@@ -294,6 +296,17 @@ LW   x4, 0(x3): load 8 back into x4
 
 Simulation output confirmed all 5 instructions executed correctly: ALU results, register writes, memory store and load all verified in Vivado xsim.
 
+## Week 6: Complete Single-Cycle CPU
+
+### Instruction Memory (`imem.v`)
+A 64-word read-only instruction ROM. It takes a byte address from the PC and outputs a corresponding 32-bit instruction. These instructions have been pre-initialized with NOP instructions (32'h00000013`) and are overridden with test instructions for simulation. Updated with new instructions to test other real scenarios 
+
+```verilog
+module imem(
+    input [31:0] address,
+    output [31:0] instr
+);
+```
 ---
 
 ## Hardware
@@ -311,7 +324,7 @@ Simulation output confirmed all 5 instructions executed correctly: ALU results, 
 - [x] Week 3 — RISC-V ISA study and 32x32 register file
 - [x] Week 4 — Fetch & Decode stages: PC, imem, decoder, datapath
 - [x] Week 5 — Execute, Memory & Writeback
-- [ ] Week 6 — Single-cycle CPU complete
+- [x] Week 6 — Single-cycle CPU complete
 - [ ] Week 7 — Pipeline registers
 - [ ] Week 8 — Hazard detection & forwarding
 - [ ] Week 9 — Pipelined CPU on FPGA
